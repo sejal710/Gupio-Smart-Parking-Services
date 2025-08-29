@@ -9,7 +9,8 @@ import RootStack from './src/navigation/RootStack';
 import { Provider } from 'react-redux';
 import { store } from './src/store';
 import Toast from 'react-native-toast-message';
-import { SafeAreaView } from 'react-native-safe-area-context';
+import "./global.css"
+
 
 
 function App() {

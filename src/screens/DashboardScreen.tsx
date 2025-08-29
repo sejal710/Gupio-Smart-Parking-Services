@@ -33,29 +33,34 @@ export default function Dashboard({ navigation }: any) {
     };
 
     return (
-        <View style={styles.container}>
+        <View className="flex-1 bg-blue-50 justify-center items-center p-5">
             {/* Logout Button */}
-            <TouchableOpacity style={styles.logoutButton} onPress={handleLogout}>
+            <TouchableOpacity
+                className="absolute top-10 right-5 bg-red-500 p-3 rounded-full shadow-lg z-10"
+                onPress={handleLogout}
+            >
                 <LogOut size={28} color="#fff" />
             </TouchableOpacity>
 
+            {/* Greeting */}
             <Animated.Text
                 entering={FadeInDown.duration(800).delay(100)}
-                style={styles.greeting}
+                className="text-3xl font-bold text-gray-800 mb-10 text-center"
             >
                 {greeting}, {employeeName}
             </Animated.Text>
 
-            <View style={styles.cardContainer}>
+            {/* Cards */}
+            <View className="flex-row justify-center space-x-5 gap-6">
                 <Animated.View
                     entering={BounceIn.delay(200).duration(800)}
                     layout={Layout.springify()}
-                    style={[styles.card, styles.totalCard]}
+                    className="w-[40%] p-6 rounded-2xl bg-blue-600 justify-center items-center shadow-lg"
                 >
-                    <Text style={styles.cardTitle}>Total Spots</Text>
+                    <Text className="text-white text-base font-medium">Total Spots</Text>
                     <Animated.Text
                         entering={SlideInRight.delay(400).duration(600)}
-                        style={styles.cardValue}
+                        className="text-white text-3xl font-bold mt-2"
                     >
                         {total}
                     </Animated.Text>
@@ -64,12 +69,12 @@ export default function Dashboard({ navigation }: any) {
                 <Animated.View
                     entering={BounceIn.delay(800).duration(800)}
                     layout={Layout.springify()}
-                    style={[styles.card, styles.availableCard]}
+                    className="w-[40%] p-6 rounded-2xl bg-green-500 justify-center items-center shadow-lg"
                 >
-                    <Text style={styles.cardTitle}>Available Spots</Text>
+                    <Text className="text-white text-base font-medium">Available Spots</Text>
                     <Animated.Text
                         entering={SlideInRight.delay(500).duration(600)}
-                        style={styles.cardValue}
+                        className="text-white text-3xl font-bold mt-2"
                     >
                         {available}
                     </Animated.Text>
@@ -79,54 +84,3 @@ export default function Dashboard({ navigation }: any) {
     );
 }
 
-const styles = StyleSheet.create({
-    container: {
-        flex: 1,
-        backgroundColor: "#f2f6ff",
-        justifyContent: "center",
-        alignItems: "center",
-        padding: 20,
-    },
-    logoutButton: {
-        position: "absolute",
-        top: 40,
-        right: 20,
-        backgroundColor: "#ef4444",
-        padding: 10,
-        borderRadius: 50,
-        zIndex: 10,
-        shadowColor: "#000",
-        shadowOpacity: 0.2,
-        shadowOffset: { width: 0, height: 3 },
-        shadowRadius: 5,
-        elevation: 5,
-    },
-    greeting: {
-        fontSize: 28,
-        fontWeight: "700",
-        marginBottom: 40,
-        color: "#333",
-        textAlign: "center",
-    },
-    cardContainer: {
-        flexDirection: "row",
-        justifyContent: "center",
-        gap: 20,
-    },
-    card: {
-        width: width * 0.4,
-        padding: 25,
-        borderRadius: 20,
-        justifyContent: "center",
-        alignItems: "center",
-        shadowColor: "#000",
-        shadowOpacity: 0.15,
-        shadowOffset: { width: 0, height: 5 },
-        shadowRadius: 10,
-        elevation: 8,
-    },
-    totalCard: { backgroundColor: "#4f83cc" },
-    availableCard: { backgroundColor: "#34d399" },
-    cardTitle: { fontSize: 16, color: "#fff", fontWeight: "500" },
-    cardValue: { fontSize: 32, fontWeight: "700", color: "#fff", marginTop: 10 },
-});

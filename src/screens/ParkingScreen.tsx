@@ -119,10 +119,10 @@ const ParkingScreen = () => {
                 key={prefix}
                 entering={BounceIn.delay(index * 150)}
                 layout={Layout.springify()}
-                style={styles.sectionCard}
+                className="bg-white rounded-2xl p-4 mb-5 shadow-md"
             >
-                <Text style={styles.sectionTitle}>{prefix} Section</Text>
-                <View style={styles.grid}>
+                <Text className="text-lg font-semibold mb-3 text-gray-900">{prefix} Section</Text>
+                <View className="flex-row flex-wrap justify-center gap-2">
                     {sectionSlots.map(slot => (
                         <Animated.View
                             key={slot.id}
@@ -130,16 +130,11 @@ const ParkingScreen = () => {
                             layout={Layout.springify()}
                         >
                             <TouchableOpacity
-                                style={[
-                                    styles.slot,
-                                    {
-                                        backgroundColor:
-                                            slot.status === "available" ? "#34d399" : "#f87171",
-                                    },
-                                ]}
+                                className={`w-20 h-20 rounded-xl justify-center items-center shadow-md ${slot.status === "available" ? "bg-green-500" : "bg-red-400"
+                                    }`}
                                 onPress={() => handlePress(slot)}
                             >
-                                <Text style={styles.slotText}>{slot.id}</Text>
+                                <Text className="text-white font-bold text-sm">{slot.id}</Text>
                             </TouchableOpacity>
                         </Animated.View>
                     ))}
@@ -149,9 +144,9 @@ const ParkingScreen = () => {
     };
 
     return (
-        <ScrollView style={styles.container}>
-            <Text style={styles.header}>Parking Layout</Text>
-            <Text style={styles.availableText}>
+        <ScrollView className="flex-1 p-3 bg-slate-100">
+            <Text className="text-2xl font-bold mb-2 text-gray-800">Parking Layout</Text>
+            <Text className="text-base mb-4 text-gray-700">
                 Available Spots: {available} / {total}
             </Text>
 
@@ -161,42 +156,3 @@ const ParkingScreen = () => {
 };
 
 export default ParkingScreen;
-
-const styles = StyleSheet.create({
-    container: { flex: 1, padding: 12, backgroundColor: "#f0f4f8" },
-    header: { fontSize: 26, fontWeight: "700", marginBottom: 8, color: "#1f2937" },
-    availableText: { fontSize: 16, marginBottom: 16, color: "#374151" },
-    sectionCard: {
-        backgroundColor: "#fff",
-        borderRadius: 16,
-        padding: 16,
-        marginBottom: 20,
-        shadowColor: "#000",
-        shadowOpacity: 0.1,
-        shadowOffset: { width: 0, height: 4 },
-        shadowRadius: 8,
-        elevation: 5,
-    },
-    sectionTitle: { fontSize: 18, fontWeight: "600", marginBottom: 12, color: "#111827" },
-    grid: {
-        flexDirection: "row",
-        flexWrap: "wrap",
-        justifyContent: "center",
-        gap: 10
-    },
-    slot: {
-        width: 80,
-        height: 80,
-        aspectRatio: 1.2,
-        margin: "1%",
-        borderRadius: 12,
-        justifyContent: "center",
-        alignItems: "center",
-        shadowColor: "#000",
-        shadowOpacity: 0.15,
-        shadowOffset: { width: 0, height: 3 },
-        shadowRadius: 6,
-        elevation: 4,
-    },
-    slotText: { color: "#fff", fontWeight: "700", fontSize: 12 },
-});

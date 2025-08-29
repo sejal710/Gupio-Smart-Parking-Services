@@ -1,11 +1,10 @@
 import React, { useEffect, useState } from "react";
-import { View, Text, TextInput, TouchableOpacity, StyleSheet, Alert } from "react-native";
+import { View, Text, TextInput, TouchableOpacity, Alert } from "react-native";
 import Toast from "react-native-toast-message";
 import { z, ZodError } from "zod";
 import { useDispatch, useSelector } from "react-redux";
 import { setOTP, setEmployeeId, loadFromStorage, setLogin } from "../store/authSlice";
 import AsyncStorage from "@react-native-async-storage/async-storage";
-import { is } from "zod/locales";
 
 const loginSchema = z.object({
     employeeId: z.string().min(1, "Employee ID is required"),
@@ -30,7 +29,7 @@ export default function LoginScreen({ navigation }: any) {
             const empStored = await AsyncStorage.getItem("employeeId");
             const isLoggedIn = await AsyncStorage.getItem("isLoggedIn");
             console.log(isLoggedIn, 'isLoggedIn');
-            if (isLoggedIn == 'true') navigation.replace("Home");
+            // if (isLoggedIn == 'true') navigation.replace("Home");
             dispatch(loadFromStorage({ otp: otpStored, employeeId: empStored, isLoggedIn: true }));
             if (empStored) setEmployeeIdLocal(empStored);
         };
@@ -47,12 +46,11 @@ export default function LoginScreen({ navigation }: any) {
             const generatedOTP = Math.floor(100000 + Math.random() * 900000).toString();
             dispatch(setOTP(generatedOTP));
             dispatch(setEmployeeId(employeeId));
-            dispatch(setLogin(true));
             setOtpSent(true);
             // showToast("success", `OTP sent to Employee ID: ${employeeId}`, `Your OTP is ${generatedOTP}`);
             Alert.alert("OTP Sent", `Your OTP is ${generatedOTP}`);
         } catch (err: any) {
-            if (err instanceof ZodError) {
+            if (JSON.parse(err) instanceof ZodError) {
                 let errors = JSON.parse(err);
                 const firstErrorMessage = errors[0]?.message || "Validation error";
                 showToast("error", firstErrorMessage);
@@ -67,10 +65,10 @@ export default function LoginScreen({ navigation }: any) {
                 showToast("success", "OTP Verified", "Redirecting to Dashboard...");
                 // In LoginScreen.tsx, after login success
                 navigation.replace("Home");
-
+                dispatch(setLogin(true));
             } else showToast("error", "Invalid OTP");
         } catch (err: any) {
-            if (err instanceof ZodError) {
+            if (JSON.parse(err) instanceof ZodError) {
                 let errors = JSON.parse(err);
                 const firstErrorMessage = errors[0]?.message || "Validation error";
                 showToast("error", firstErrorMessage);
@@ -79,39 +77,55 @@ export default function LoginScreen({ navigation }: any) {
     };
 
     return (
-        <View style={styles.container}>
-            <Text style={styles.header}>Gupio Smart Parking Services</Text>
+        <View className="flex-1 justify-center px-6">
+            <View className="bg-white p-6 rounded-2xl shadow-lg">
+                <Text className="text-3xl font-bold text-center mb-6 text-blue-800">
+                    Gupio Smart Parking
+                </Text>
 
-            {!otpSent ? (
-                <>
-                    <TextInput style={styles.input} placeholder="Employee ID" value={employeeId} onChangeText={setEmployeeIdLocal} />
-                    <TextInput style={styles.input} placeholder="Password" secureTextEntry value={password} onChangeText={setPassword} />
-                    <TouchableOpacity style={styles.forgotBtn}>
-                        <Text style={styles.forgotText}>Forgot Password?</Text>
-                    </TouchableOpacity>
-                    <TouchableOpacity style={styles.button} onPress={handleSendOTP}>
-                        <Text style={styles.buttonText}>Send OTP</Text>
-                    </TouchableOpacity>
-                </>
-            ) : (
-                <>
-                    <TextInput style={styles.input} placeholder="Enter 6-digit OTP" keyboardType="number-pad" value={otp} onChangeText={setOtp} />
-                    <TouchableOpacity style={styles.button} onPress={handleVerifyOTP}>
-                        <Text style={styles.buttonText}>Verify OTP</Text>
-                    </TouchableOpacity>
-                </>
-            )}
-
+                {!otpSent ? (
+                    <>
+                        <TextInput
+                            className="border border-gray-300 p-3 rounded-lg mb-4 shadow-sm"
+                            placeholder="Employee ID"
+                            value={employeeId}
+                            onChangeText={setEmployeeIdLocal}
+                        />
+                        <TextInput
+                            className="border border-gray-300 p-3 rounded-lg mb-4 shadow-sm"
+                            placeholder="Password"
+                            secureTextEntry
+                            value={password}
+                            onChangeText={setPassword}
+                        />
+                        <TouchableOpacity className="mb-4 self-end">
+                            <Text className="text-blue-600 font-medium">Forgot Password?</Text>
+                        </TouchableOpacity>
+                        <TouchableOpacity
+                            className="bg-blue-600 p-4 rounded-lg items-center shadow-md"
+                            onPress={handleSendOTP}
+                        >
+                            <Text className="text-white font-bold text-lg">Send OTP</Text>
+                        </TouchableOpacity>
+                    </>
+                ) : (
+                    <>
+                        <TextInput
+                            className="border border-gray-300 p-3 rounded-lg mb-4 shadow-sm"
+                            placeholder="Enter 6-digit OTP"
+                            keyboardType="number-pad"
+                            value={otp}
+                            onChangeText={setOtp}
+                        />
+                        <TouchableOpacity
+                            className="bg-green-600 p-4 rounded-lg items-center shadow-md"
+                            onPress={handleVerifyOTP}
+                        >
+                            <Text className="text-white font-bold text-lg">Verify OTP</Text>
+                        </TouchableOpacity>
+                    </>
+                )}
+            </View>
         </View>
     );
 }
-
-const styles = StyleSheet.create({
-    container: { flex: 1, padding: 20, justifyContent: "center", backgroundColor: "#fff" },
-    header: { fontSize: 24, fontWeight: "bold", marginBottom: 30, textAlign: "center" },
-    input: { borderWidth: 1, borderColor: "#ccc", padding: 12, borderRadius: 6, marginBottom: 15 },
-    forgotBtn: { marginBottom: 15, alignSelf: "flex-end" },
-    forgotText: { color: "#007BFF" },
-    button: { backgroundColor: "#007BFF", padding: 15, borderRadius: 6, alignItems: "center" },
-    buttonText: { color: "#fff", fontWeight: "bold" },
-});
