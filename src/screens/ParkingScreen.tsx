@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import {
     View,
     Text,
@@ -8,21 +8,16 @@ import {
     ScrollView,
 } from "react-native";
 import { useSelector, useDispatch } from "react-redux";
-import { RootState } from "../store";   // adjust path as per your project
+import { RootState } from "../store";
 import { confirmSpot, cancelSpot } from "../store/spotSlice";
-import { SafeAreaView } from "react-native-safe-area-context";
+import Animated, { BounceIn, Layout } from "react-native-reanimated";
 
 type Slot = {
     id: string;
     status: "available" | "booked";
 };
 
-// Sections (like BookMyShow seat map)
-const sections = {
-    US: 6,
-    LS: 6,
-    B3: 8,
-};
+const sections = { US: 15, LS: 8, B3: 7 };
 
 const generateSlots = (section: string, count: number): Slot[] =>
     Array.from({ length: count }, (_, i) => ({
@@ -39,7 +34,7 @@ const initialSlots: Slot[] = [
 const ParkingScreen = () => {
     const dispatch = useDispatch();
     const { available, total } = useSelector((state: RootState) => state.spots);
-
+    const [activeBooking, setActiveBooking] = useState<Slot | null>(null);
     const [slots, setSlots] = useState<Slot[]>(initialSlots);
 
     const handlePress = (slot: Slot) => {
@@ -48,55 +43,108 @@ const ParkingScreen = () => {
                 {
                     text: "Yes",
                     onPress: () => {
-                        setSlots((prev) =>
-                            prev.map((s) =>
-                                s.id === slot.id ? { ...s, status: "available" } : s
-                            )
+                        setSlots(prev =>
+                            prev.map(s => s.id === slot.id ? { ...s, status: "available" } : s)
                         );
-                        dispatch(cancelSpot()); // update Redux
+                        dispatch(cancelSpot());
+                        if (activeBooking?.id === slot.id) setActiveBooking(null);
                     },
                 },
                 { text: "No" },
             ]);
+
         } else {
             Alert.alert("Confirm Booking", `Book ${slot.id}?`, [
                 {
                     text: "Yes",
                     onPress: () => {
-                        setSlots((prev) =>
-                            prev.map((s) =>
-                                s.id === slot.id ? { ...s, status: "booked" } : s
-                            )
+                        setSlots(prev =>
+                            prev.map(s => s.id === slot.id ? { ...s, status: "booked" } : s)
                         );
-                        dispatch(confirmSpot()); // update Redux
+                        dispatch(confirmSpot());
+                        setActiveBooking({ ...slot, status: "booked" });
                     },
                 },
                 { text: "No" },
             ]);
         }
     };
+    // Inactivity reminder timer
+    useEffect(() => {
+        let timer: any;
 
-    const renderSection = (prefix: string) => {
-        const sectionSlots = slots.filter((s) => s.id.startsWith(prefix));
+        const startReminder = () => {
+            if (!activeBooking) return;
+
+            timer = setTimeout(() => {
+                Alert.alert(
+                    "Reminder",
+                    "You haven’t parked your vehicle yet. Would you like to cancel this?",
+                    [
+                        {
+                            text: "Cancel Booking",
+                            onPress: () => {
+                                setSlots(prev =>
+                                    prev.map(s =>
+                                        s.id === activeBooking.id ? { ...s, status: "available" } : s
+                                    )
+                                );
+                                dispatch(cancelSpot());
+                                setActiveBooking(null); // stop reminders
+                            },
+                        },
+                        {
+                            text: "No, I will be there",
+                            onPress: () => {
+                                // Restart reminder after 10s
+                                startReminder();
+                            },
+                        },
+                    ]
+                );
+            }, 10000); // 10 seconds for demo
+        };
+
+        startReminder();
+
+        return () => clearTimeout(timer); // cleanup if component unmounts
+    }, [activeBooking]);
+
+
+    const renderSection = (prefix: string, index: number) => {
+        const sectionSlots = slots.filter(s => s.id.startsWith(prefix));
 
         return (
-            <View key={prefix} style={styles.section}>
+            <Animated.View
+                key={prefix}
+                entering={BounceIn.delay(index * 150)}
+                layout={Layout.springify()}
+                style={styles.sectionCard}
+            >
                 <Text style={styles.sectionTitle}>{prefix} Section</Text>
                 <View style={styles.grid}>
-                    {sectionSlots.map((slot) => (
-                        <TouchableOpacity
+                    {sectionSlots.map(slot => (
+                        <Animated.View
                             key={slot.id}
-                            style={[
-                                styles.slot,
-                                { backgroundColor: slot.status === "available" ? "green" : "red" },
-                            ]}
-                            onPress={() => handlePress(slot)}
+                            entering={BounceIn.delay(100)}
+                            layout={Layout.springify()}
                         >
-                            <Text style={styles.slotText}>{slot.id}</Text>
-                        </TouchableOpacity>
+                            <TouchableOpacity
+                                style={[
+                                    styles.slot,
+                                    {
+                                        backgroundColor:
+                                            slot.status === "available" ? "#34d399" : "#f87171",
+                                    },
+                                ]}
+                                onPress={() => handlePress(slot)}
+                            >
+                                <Text style={styles.slotText}>{slot.id}</Text>
+                            </TouchableOpacity>
+                        </Animated.View>
                     ))}
                 </View>
-            </View>
+            </Animated.View>
         );
     };
 
@@ -107,7 +155,7 @@ const ParkingScreen = () => {
                 Available Spots: {available} / {total}
             </Text>
 
-            {Object.keys(sections).map(renderSection)}
+            {Object.keys(sections).map((prefix, index) => renderSection(prefix, index))}
         </ScrollView>
     );
 };
@@ -115,23 +163,40 @@ const ParkingScreen = () => {
 export default ParkingScreen;
 
 const styles = StyleSheet.create({
-    container: { flex: 1, padding: 12, backgroundColor: "#fafafa" },
-    header: { fontSize: 22, fontWeight: "bold", marginBottom: 8 },
-    availableText: { fontSize: 16, marginBottom: 16, color: "#333" },
-    section: { marginBottom: 24 },
-    sectionTitle: { fontSize: 18, fontWeight: "bold", marginBottom: 12 },
+    container: { flex: 1, padding: 12, backgroundColor: "#f0f4f8" },
+    header: { fontSize: 26, fontWeight: "700", marginBottom: 8, color: "#1f2937" },
+    availableText: { fontSize: 16, marginBottom: 16, color: "#374151" },
+    sectionCard: {
+        backgroundColor: "#fff",
+        borderRadius: 16,
+        padding: 16,
+        marginBottom: 20,
+        shadowColor: "#000",
+        shadowOpacity: 0.1,
+        shadowOffset: { width: 0, height: 4 },
+        shadowRadius: 8,
+        elevation: 5,
+    },
+    sectionTitle: { fontSize: 18, fontWeight: "600", marginBottom: 12, color: "#111827" },
     grid: {
         flexDirection: "row",
         flexWrap: "wrap",
         justifyContent: "center",
+        gap: 10
     },
     slot: {
-        width: "22%",
+        width: 80,
+        height: 80,
         aspectRatio: 1.2,
         margin: "1%",
-        borderRadius: 8,
+        borderRadius: 12,
         justifyContent: "center",
         alignItems: "center",
+        shadowColor: "#000",
+        shadowOpacity: 0.15,
+        shadowOffset: { width: 0, height: 3 },
+        shadowRadius: 6,
+        elevation: 4,
     },
-    slotText: { color: "#fff", fontWeight: "bold", fontSize: 12 },
+    slotText: { color: "#fff", fontWeight: "700", fontSize: 12 },
 });
