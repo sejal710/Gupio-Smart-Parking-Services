@@ -76,6 +76,10 @@ type ParkingSlot = {
   bookedAt?: string;
 }
 
+https://github.com/user-attachments/assets/a1b734fc-b7f1-4436-ad08-983f21649dc0
+
+
+
 
 
 
