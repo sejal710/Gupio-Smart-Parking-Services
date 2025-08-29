@@ -62,6 +62,10 @@ A **React Native CLI** application built with **TypeScript**, implementing a sma
   - Options: Cancel / No, I will be there
 - Reminder resets if user cancels
 
+
+https://github.com/user-attachments/assets/6b968ad3-2210-4b91-ba25-8cd173b77f06
+
+
 ---
 
 ## 📊 Mock Data
@@ -75,10 +79,6 @@ type ParkingSlot = {
   bookedBy?: string;
   bookedAt?: string;
 }
-
-https://github.com/user-attachments/assets/a1b734fc-b7f1-4436-ad08-983f21649dc0
-
-
 
 
 
