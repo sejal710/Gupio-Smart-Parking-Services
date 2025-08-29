@@ -50,8 +50,9 @@ export default function LoginScreen({ navigation }: any) {
             // showToast("success", `OTP sent to Employee ID: ${employeeId}`, `Your OTP is ${generatedOTP}`);
             Alert.alert("OTP Sent", `Your OTP is ${generatedOTP}`);
         } catch (err: any) {
-            if (JSON.parse(err) instanceof ZodError) {
-                let errors = JSON.parse(err);
+            let errors = JSON.parse(err);
+            if (err instanceof ZodError) {
+
                 const firstErrorMessage = errors[0]?.message || "Validation error";
                 showToast("error", firstErrorMessage);
             } else console.error(err);
@@ -68,8 +69,8 @@ export default function LoginScreen({ navigation }: any) {
                 dispatch(setLogin(true));
             } else showToast("error", "Invalid OTP");
         } catch (err: any) {
-            if (JSON.parse(err) instanceof ZodError) {
-                let errors = JSON.parse(err);
+            let errors = JSON.parse(err);
+            if (err instanceof ZodError) {
                 const firstErrorMessage = errors[0]?.message || "Validation error";
                 showToast("error", firstErrorMessage);
             } else console.error(err);
@@ -109,7 +110,8 @@ export default function LoginScreen({ navigation }: any) {
                         </TouchableOpacity>
                     </>
                 ) : (
-                    <>
+                    <View>
+                        <Text className="absolute top-3 right-3 text-sm text-gray-500">OTP: {reduxOtp}</Text>
                         <TextInput
                             className="border border-gray-300 p-3 rounded-lg mb-4 shadow-sm"
                             placeholder="Enter 6-digit OTP"
@@ -123,7 +125,7 @@ export default function LoginScreen({ navigation }: any) {
                         >
                             <Text className="text-white font-bold text-lg">Verify OTP</Text>
                         </TouchableOpacity>
-                    </>
+                    </View>
                 )}
             </View>
         </View>

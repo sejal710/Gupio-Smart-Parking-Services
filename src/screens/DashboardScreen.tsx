@@ -15,7 +15,7 @@ const { width } = Dimensions.get("window");
 
 export default function Dashboard({ navigation }: any) {
     const [greeting, setGreeting] = useState("Hello");
-    const employeeName = "Sejal Jaiswal"; // Replace with actual employee name
+    const employeeName = "xyz"; // Replace with actual employee name
     const { total, available } = useSelector((state: RootState) => state.spots);
     const dispatch = useDispatch();
 
